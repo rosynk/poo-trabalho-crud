@@ -1,7 +1,6 @@
 package src.livros;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,15 +12,16 @@ import src.util.Conexao;
 
 
 public class LivrosDAOImp implements LivrosDAO {
-    /* // Constantes para conexão com o banco de dados
-    private static final String DB_CLASS = "org.mariadb.jdbc.Driver";
-    private static final String DB_URL = "jdbc:mariadb://localhost:3306/trabalhobd?allowPublicKeyRetrieval=true";
-    private static final String DB_USER = "root";
+    /* */ // Constantes para conexão com o banco de dados
+    //private static final String DB_CLASS = "org.postgresql.jdbc.Driver";
+    private static final String DB_URL = "jdbc:mariadb://localhost:3306/trabalhobd";
+    private static final String DB_USER = "root"; // Usuário do banco
     private static final String DB_PASS = "scooby";
+
     private Connection con = null;
 
     // Construtor que inicializa a conexão com o banco de dados
-    public LivrosDAOImp() throws LivrosException {
+    /*public LivrosDAOImp() throws LivrosException {
         try {
             Class.forName(DB_CLASS); // Carrega o driver
             con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
@@ -43,13 +43,14 @@ public class LivrosDAOImp implements LivrosDAO {
 
     @Override
     public void inserir(Livros l) throws LivrosException {
-       
-            String SQL = """
-                    INSERT INTO livros (id, titulo, autor, anoLancamento, genero)
-                    VALUES (?, ?, ?, ?, ?)
-                    """;
+        System.out.println("=======================");
+        String SQL = """
+                INSERT INTO livros (id, titulo, autor, anoLancamento, genero)
+                VALUES (?, ?, ?, ?, ?)
+                """;
         try (Connection con = Conexao.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL)) {
-            stmt.setString(1, l.getTitulo()); 
+
+            stmt.setInt(1, l.getId());
             stmt.setString(2, l.getTitulo());
             stmt.setString(3, l.getAutor());
             stmt.setInt(4, l.getAnoLancamento());
@@ -67,43 +68,47 @@ public class LivrosDAOImp implements LivrosDAO {
         } catch (SQLException e) {
             throw new LivrosException("Erro ao salvar livro.", e);
             //e.printStackTrace();
-           // throw new LivrosException(e);
+            // throw new LivrosException(e);
         }
     }
 
     @Override
     public void atualizar(Livros l) throws LivrosException {
-        
+
         String SQL = """
-                    UPDATE livros 
-                    SET titulo=?, autor=?, anoLancamento=?, genero=?
-                    WHERE id=?
-                    """;
-        
-        try (Connection conn = Conexao.getConnection(); PreparedStatement stmt = conn.prepareStatement(SQL)) {
-            
-            stmt.setString(1, l.getTitulo());
-            stmt.setString(2, l.getAutor());
-            stmt.setInt(3, l.getAnoLancamento());
-            stmt.setString(4, l.getGenero());
-            stmt.setString(5, l.getId());
+                UPDATE livros 
+                SET id=?, titulo=?, autor=?, anoLancamento=?, genero=?
+                WHERE id=?
+                """;
+
+        try (Connection con = Conexao.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL)) {
+
+            stmt.setInt(1, l.getId());
+            stmt.setString(2, l.getTitulo());
+            stmt.setString(3, l.getAutor());
+            stmt.setInt(4, l.getAnoLancamento());
+            stmt.setString(5, l.getGenero());
+            stmt.setInt(6, l.getId());
+
             int i = stmt.executeUpdate();
         } catch (SQLException e) {
+            System.out.println("deu erro em atualizar no imp");
             e.printStackTrace();
             throw new LivrosException(e);
+
         }
     }
 
     @Override
     public void remover(Livros l) throws LivrosException {
-       
-        String SQL = """
-                    DELETE FROM livros WHERE id = ?
-                    """;
 
-       
-        try (Connection conn = Conexao.getConnection(); PreparedStatement stmt = conn.prepareStatement(SQL)) {    
-            stmt.setString(1, l.getId());  // Corrigido de String para Integer para o id
+        String SQL = """
+                DELETE FROM livros WHERE id = ?
+                """;
+
+
+        try (Connection conn = Conexao.getConnection(); PreparedStatement stmt = conn.prepareStatement(SQL)) {
+            stmt.setInt(1, l.getId());
             int i = stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -116,18 +121,18 @@ public class LivrosDAOImp implements LivrosDAO {
         List<Livros> lista = new ArrayList<>();
 
         String SQL = """
-                    SELECT * FROM livros WHERE titulo LIKE ?
-                    """;
+                SELECT * FROM livros WHERE titulo LIKE ?
+                """;
 
         try (Connection conn = Conexao.getConnection(); PreparedStatement stmt = conn.prepareStatement(SQL)) {
             stmt.setString(1, "%" + nome + "%");
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 Livros livro = new Livros();
-                livro.setId(rs.getString ("id"));
+                livro.setId(rs.getInt("id"));
                 livro.setTitulo(rs.getString("titulo"));
                 livro.setAutor(rs.getString("autor"));
-                livro.setAnoLancamento(rs.getInt("ano_lancamento"));
+                livro.setAnoLancamento(rs.getInt("anoLancamento")); //"ano_lancamento"
                 livro.setGenero(rs.getString("genero"));
                 lista.add(livro);
             
@@ -162,7 +167,7 @@ public class LivrosDAOImp implements LivrosDAO {
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 Livros livro = new Livros();
-                livro.setId(rs.getString("id"));
+                livro.setId(rs.getInt("id"));
                 livro.setTitulo(rs.getString("titulo"));
                 livro.setAutor(rs.getString("autor"));
                 livro.setAnoLancamento(rs.getInt("ano_lancamento"));
@@ -174,7 +179,7 @@ public class LivrosDAOImp implements LivrosDAO {
         }
         return livros;
     }
-        /*List<Livros> lista = new ArrayList<>();
+}        /*List<Livros> lista = new ArrayList<>();
         try {
             String SQL = """
                     SELECT * FROM livros
@@ -198,4 +203,4 @@ public class LivrosDAOImp implements LivrosDAO {
     }*/
     
 
-}
+

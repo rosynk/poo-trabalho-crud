@@ -2,16 +2,16 @@ package src.livros;
 
 public class Livros {
 
-    private String id = "";
+    private int id = 0;
     private String titulo = "";
     private String autor = "";
     private int anoLancamento = 0;
     private String genero = "";
     
-    public String getId() {
+    public int getId() {
         return id;
     }
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
     public String getTitulo() {

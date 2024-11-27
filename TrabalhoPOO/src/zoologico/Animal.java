@@ -1,19 +1,19 @@
 package src.zoologico;
 
 public class Animal {
-    private String id;
+    private int id;
     private String nome;
     private String especie;
     private int idade;
     private String habitat;
 
     // Getters e Setters
-    public String getId() {
+    public int getId() {
         return id;
     }
 
     public void setId(String id) {
-        this.id = id;
+        this.id = Integer.parseInt(id);
     }
 
     public String getNome() {

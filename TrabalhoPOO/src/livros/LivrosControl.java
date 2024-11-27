@@ -8,33 +8,89 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import src.zoologico.Animal;
 
 public class LivrosControl {
 
     private ObservableList<Livros> lista = FXCollections.observableArrayList();
-    private StringProperty id = new SimpleStringProperty("");
+    private IntegerProperty id = new SimpleIntegerProperty(0);
     private StringProperty titulo = new SimpleStringProperty("");
     private StringProperty autor = new SimpleStringProperty("");
     private StringProperty genero = new SimpleStringProperty("");
     private IntegerProperty anoLancamento = new SimpleIntegerProperty(0);
     private LivrosDAO livrosDAO;
 
+
+
+    public void entidadeParaTela(Livros l) {
+        if (l!=null) {
+            this.id.set( l.getId() );
+            this.autor.set(l.getAutor());
+            this.genero.set(l.getGenero());
+            this.anoLancamento.set(l.getAnoLancamento());
+            this.titulo.set(l.getTitulo());
+        }
+    }
+
+    public void limparTela() {
+
+            this.id.set(0);
+            this.autor.set("");
+            this.genero.set("");
+            this.anoLancamento.set(0);
+            this.titulo.set("");
+
+    }
+
     public LivrosControl() throws LivrosException{
         livrosDAO = new LivrosDAOImp();
+        
     }
 
     public void gravar () throws LivrosException {
-            System.out.println("entrou msm");
+            //System.out.println("entrou no gravar");
             Livros l = new Livros();
             l.setId(this.id.get());
             l.setTitulo(this.titulo.get());
             l.setAutor(this.autor.get());
             l.setAnoLancamento(this.anoLancamento.get());
-            l.setGenero(this.genero.get());    
+            l.setGenero(this.genero.get());
 
-            livrosDAO.inserir(l);
-            System.out.println("Livro gravado com sucesso!");
-            lista.add(l);
+            boolean exists = false;
+            for (Livros livros : lista) {
+                if (livros.getId() == l.getId()) {
+                    exists = true;
+                    break;
+                }
+            }
+
+            if (!exists) {
+                livrosDAO.inserir(l);
+            } else {
+                System.out.println("O já existente.\nClique em atualizar");
+            }
+
+        livrosDAO.inserir(l);
+        System.out.println("Livro gravado com sucesso!");
+        lista.add(l);
+
+
+    }
+
+    public void atualizar () throws LivrosException{
+        Livros l = new Livros();
+
+        l.setId(this.id.get());
+        l.setTitulo(this.titulo.get());
+        l.setAutor(this.autor.get());
+        l.setAnoLancamento(this.anoLancamento.get());
+        l.setGenero(this.genero.get());
+
+        try {
+            livrosDAO.atualizar(l);
+        } catch(Exception e){
+            System.out.println("Erro na atualização");
+            }
     }
 
     public void alert(AlertType tipo, String msg) { 
@@ -69,7 +125,8 @@ public class LivrosControl {
             System.out.println(e.getMessage());
             System.out.println("Erro ao excluir o livro.");
         }
-        
+
+
         
     }
 
@@ -77,15 +134,15 @@ public class LivrosControl {
         return this.lista;
     }
 
-    public String getId() {
+    public int getId() {
         return id.get();
     }
 
     public void setId(String id) {
-        this.id.set(id);
+        this.id.set(Integer.parseInt(id));
     }
 
-    public StringProperty idProperty() {
+    public IntegerProperty idProperty() {
         return id;
     }
 

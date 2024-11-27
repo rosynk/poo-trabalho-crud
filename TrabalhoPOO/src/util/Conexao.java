@@ -1,4 +1,6 @@
-package src.util;
+
+
+    package src.util;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -9,19 +11,19 @@ import src.livros.LivrosException;
 public class Conexao {
 
     // URL do banco de dados PostgreSQL
-    private static final String URL = "jdbc:postgresql://localhost:5432/trabalhobd";
-    private static final String USER = "postgres"; // Usuário do banco
+    private static final String URL = "jdbc:mariadb://localhost:3306/trabalhobd";
+    private static final String USER = "root"; // Usuário do banco
     private static final String PASSWORD = "scooby"; // Senha do banco
 
     // Carrega o driver (opcional, mas ajuda em algumas configurações)
-    static {
+    /*static {
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
             System.err.println("Driver do PostgreSQL não encontrado!");
             e.printStackTrace();
         }
-    }
+    }*/
 
     // Obtém uma conexão com o banco de dados
     public static Connection getConnection() throws SQLException {

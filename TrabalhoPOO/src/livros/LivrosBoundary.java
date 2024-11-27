@@ -2,6 +2,7 @@ package src.livros;
 
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -10,15 +11,18 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Callback;
+import javafx.util.StringConverter;
 import javafx.util.converter.IntegerStringConverter;
 import javafx.scene.control.TableCell;
+import src.Tela;
 
-public class LivrosBoundary extends Application {
+public class LivrosBoundary implements Tela {
 
-    private Label lblId = new Label();
+    private TextField lblId = new TextField();
     private TextField txtTitulo = new TextField();
     private TextField txtAutor = new TextField();
     private TextField txtAnoLancamento = new TextField();
@@ -27,12 +31,13 @@ public class LivrosBoundary extends Application {
     private TableView<Livros> tableView = new TableView<>();
     Button btnGravar = new Button("Gravar");
     Button btnPesquisar = new Button("Pesquisar");
+    Button btnAtualizar = new Button("Atualizar");
     private LivrosControl control;
 
  
 
     @Override
-    public void start(Stage stage) {
+    public Pane render() {
 
         try {
             control = new LivrosControl();
@@ -60,24 +65,28 @@ public class LivrosBoundary extends Application {
         // Botões
         pane.add(btnGravar, 0, 5);
         pane.add(btnPesquisar, 1, 5);
+        pane.add(btnAtualizar, 2, 5);
+
+        // Espaçamento entre os componentes
+        pane.setHgap(5);
+        pane.setVgap(5);
 
         // Tabela
-        generateColumns(); // Gera as colunas
+        generateColumns();
         tableView.setItems(control.getLista()); // Associa a lista de livros ao TableView
-        pane.add(tableView, 0, 6, 2, 1); // Adiciona a TableView ao GridPane
+        pane.add(tableView, 0, 6, 3, 1);
 
         // Eventos
         btnGravar.setOnAction(e -> {
             try {
                 control.gravar();
-                System.out.println("Entra em gravar");
+                //System.out.println("Entra em gravar");
             } catch (LivrosException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-                System.err.println("Não entrou em gravar");
+
+                control.alert(AlertType.ERROR, "Erro ao gravar");
             }  
             tableView.refresh(); 
-            
+            control.limparTela();
         });
         btnPesquisar.setOnAction(e -> {
             try { 
@@ -86,12 +95,32 @@ public class LivrosBoundary extends Application {
                 control.alert(AlertType.ERROR, "Erro ao pesquisar");
             } 
         });
+        btnAtualizar.setOnAction(e -> {
+            try{
+                control.atualizar();
+            } catch (LivrosException ex) {
+                control.alert(AlertType.ERROR, "Erro ao atualizar");
+            }
+            control.limparTela();
+        });
+
+        vincularPropriedades();
+
+        //Retorna as coisas no tableView
+       try {
+            control.pesquisarLivro();
+        } catch (LivrosException e) {
+            throw new RuntimeException(e);
+        }
 
         // Scene e Stage
-        Scene scene = new Scene(pane, 600, 400);
+        /*Scene scene = new Scene(pane, 600, 400);
         stage.setTitle("Cadastro de Livros");
         stage.setScene(scene);
-        stage.show();
+        stage.show();*/
+
+        tableView.refresh();
+        return pane;
     }
 
     // Função para gerar as colunas da tabela
@@ -154,32 +183,24 @@ public class LivrosBoundary extends Application {
 
         // Adiciona as colunas na tabela
         tableView.getColumns().addAll(col1, col2, col3, col4, col5, colExcluir);
+        tableView.setItems(control.getLista());
+
+        tableView.getSelectionModel().selectedItemProperty()
+                .addListener( (obs, antigo, novo) -> {
+                    System.out.println( "Selecionado o animal ==> " + novo);
+                    control.entidadeParaTela( novo );
+                });
     }
 
-    public void vincularPropriedades() { 
-        Bindings.bindBidirectional(lblId.textProperty(), control.idProperty());
+    public void vincularPropriedades() {
+        Bindings.bindBidirectional(lblId.textProperty(), control.idProperty(), (StringConverter) new IntegerStringConverter() );
         Bindings.bindBidirectional(txtTitulo.textProperty(), control.tituloProperty());
         Bindings.bindBidirectional(txtAutor.textProperty(), control.autorProperty());
         Bindings.bindBidirectional(txtGenero.textProperty(), control.generoProperty());
-        txtAnoLancamento.textProperty().addListener((obs, oldValue, newValue) -> {
-            try {
-                // Atualiza a propriedade de ano com a conversão para inteiro
-                control.anoLancamentoProperty().set(Integer.parseInt(newValue));
-            } catch (NumberFormatException e) {
-                // Caso o valor não seja um número válido, restaura o valor antigo
-                txtAnoLancamento.setText(oldValue);
-            }
-        });
-        
-        control.anoLancamentoProperty().addListener((obs, oldValue, newValue) -> {
-            // Atualiza o campo de texto com a conversão para String
-            txtAnoLancamento.setText(newValue.toString());
-        });
+        Bindings.bindBidirectional(txtAnoLancamento.textProperty(), control.anoLancamentoProperty(), (StringConverter) new IntegerStringConverter() );
         
     }
     
 
-    public static void main(String[] args) {
-        Application.launch(LivrosBoundary.class, args);
-    }
+
 }
